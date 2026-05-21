@@ -137,7 +137,7 @@ concentration AS (
 SELECT ms.trade_count, ms.unique_wallets, ms.total_volume,
     COALESCE(nw12.new_wallet_volume_12h, 0) / NULLIF(ms.total_volume, 0) AS new_wallet_ratio_12h,
     COALESCE(nw6.new_wallet_volume_6h,  0) / NULLIF(ms.total_volume, 0) AS new_wallet_ratio_6h,
-    b.burst_score, d.directional_consensus, o.order_flow_imbalance,
+    b.burst_score * 1.0 / NULLIF(ms.trade_count, 0) AS burst_score, d.directional_consensus, o.order_flow_imbalance,
     c.wallet_concentration
 FROM market_stats ms
 CROSS JOIN new_wallets_12h nw12 CROSS JOIN new_wallets_6h nw6
