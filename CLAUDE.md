@@ -81,7 +81,7 @@ See `PRD.md` for full feature set, model architecture, and pipeline flow.
 
 ## Key Configuration
 
-- `backend/config.py`: `MIN_END_DATE="2025-01-01"`, `TOP_N_MARKETS=50`, `MIN_VOLUME_USD=10M`, `PRICE_HOURS_BEFORE=48`
+- `backend/config.py`: `MIN_END_DATE="2025-01-01"`, `MIN_VOLUME_USD=1M`, `PRICE_HOURS_BEFORE=48`
 - `backend/pipeline/scorer.py`: ensemble weights pu=0.5, iso=0.05, ocsvm=0.2; label weights CONFIRMED=1.0, SUSPECTED=0.6, POSSIBLE=0.3
 - `data/labeled_cases.csv`: add a row + run `--classifier-only` to incorporate new cases
 - **Dune:** wallet query scales with market count. If resource cap hit, reduce `TOP_N_MARKETS` or check per-query credit limit in Dune account settings.

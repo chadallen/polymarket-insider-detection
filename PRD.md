@@ -12,7 +12,7 @@ A proof-of-concept system that automatically scans resolved Polymarket predictio
 
 ### Price signal pipeline
 
-Fetches CLOB hourly price history (fidelity=60) for resolved political markets (Polymarket tag_id=2, volume ≥ $10M, resolved since 2024-01-01). Computes 7 features per market:
+Fetches CLOB hourly price history (fidelity=60) for resolved political markets (Polymarket tag_id=2, volume ≥ $1M, resolved since 2024-01-01). Computes 7 features per market:
 
 | Feature | Description |
 |---|---|
