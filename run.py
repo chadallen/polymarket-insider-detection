@@ -143,6 +143,8 @@ def main():
             print("This checkpoint predates Phase 1. Run the full pipeline to rebuild it.")
             sys.exit(1)
 
+        df_combined = _merge_labeled_features(df_combined, state.get("labeled_features"))
+
         _preflight(df_combined)
         print("\n=== Training ensemble classifier (PU-LightGBM + IsoForest + OC-SVM) ===")
         df_combined, rf_model, rf_scaler, _ = train_classifier(
@@ -240,6 +242,8 @@ def main():
     # ── Merge features ────────────────────────────────────────────────────
     print("\n=== Merging features ===")
     df_combined = merge_features(df_scored, df_wallet_agg)
+
+    df_combined = _merge_labeled_features(df_combined, state.get("labeled_features"))
 
     # ── Train classifier ──────────────────────────────────────────────────
     _preflight(df_combined)
@@ -365,6 +369,33 @@ def _run_live(args, cp, build_price_features, score_with_isolation_forest,
 
     if args.push:
         push_to_github(df_live_results, df_scored, df_wallet_agg)
+
+
+def _merge_labeled_features(df_combined: pd.DataFrame, df_labeled) -> pd.DataFrame:
+    """
+    Concat cached labeled case wallet features into df_combined, then
+    drop_duplicates(subset=["question"], keep="first") so the top-50 pipeline
+    row (with price features) wins over the labeled-only row (NaN price features)
+    when a market appears in both.
+
+    df_labeled columns: question, label, new_wallet_ratio, new_wallet_ratio_6h,
+      burst_score, order_flow_imbalance, wallet_age_median_days,
+      cross_market_wallet_flag.  Price feature columns are absent and become NaN
+      after concat — they will be median-imputed at training time.
+
+    Silently skips if df_labeled is None or empty (e.g. --refresh-labeled not
+    yet run).
+    """
+    if df_labeled is None or (hasattr(df_labeled, "empty") and df_labeled.empty):
+        return df_combined
+
+    before = len(df_combined)
+    combined = pd.concat([df_combined, df_labeled], ignore_index=True)
+    combined = combined.drop_duplicates(subset=["question"], keep="first")
+    added = len(combined) - before
+    total = len(combined)
+    print(f"  Added {added} labeled case rows to df_combined (total: {total})")
+    return combined
 
 
 def _preflight(df_combined):
