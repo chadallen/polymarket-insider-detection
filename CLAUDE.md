@@ -85,7 +85,7 @@ See `PRD.md` for full feature set, model architecture, and pipeline flow.
 - `backend/pipeline/scorer.py`: ensemble weights pu=0.5, iso=0.05, ocsvm=0.2; label weights CONFIRMED=1.0, SUSPECTED=0.6, POSSIBLE=0.3
 - `data/labeled_cases.csv`: add a row + run `--classifier-only` to incorporate new cases
 - **Dune:** wallet query scales with market count. If resource cap hit, reduce `TOP_N_MARKETS` or check per-query credit limit in Dune account settings.
-- **Vercel:** dashboard at https://dashboard-rouge-pi-13.vercel.app (`cgallen-1252s-projects/dashboard`), `rootDirectory=dashboard` set via REST API.
+- **Vercel:** dashboard at https://dashboard-rouge-pi-13.vercel.app (`cgallen-1252s-projects/dashboard`). Project ID: `prj_48OGesmedaMB5675OlVK1iZ2qKHH`, team: `team_osSdrCVzUhF7u54jSEa5lDrW`. Always deploy from the `dashboard/` subdirectory — Vercel loses `rootDirectory` if deployed from repo root (fix: `cd dashboard && vercel --prod --yes`). MCP tools `mcp__plugin_vercel_vercel__*` are available for inspection, logs, and deployment status.
 - **Worktrees:** need a `node_modules` symlink + `.claude/launch.json` with explicit vite path and non-conflicting port.
 
 ---
