@@ -1,7 +1,0 @@
-{
-  "database": "dolt",
-  "backend": "dolt",
-  "dolt_mode": "embedded",
-  "dolt_database": "insider_trading_detection",
-  "project_id": "495fa437-48f0-4835-b623-ebb726a0c64e"
-}

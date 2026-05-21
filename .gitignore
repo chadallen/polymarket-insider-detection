@@ -16,3 +16,8 @@ scratch.md
 .dolt/
 *.db
 .beads-credential-key
+
+# Internal Claude Code / agent working files
+.beads/
+.claude/
+CLAUDE.md
