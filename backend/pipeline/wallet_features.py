@@ -58,15 +58,20 @@ def question_matches_filter(question: str, question_filter: str) -> bool:
 # ── Dune SQL builder ───────────────────────────────────────────────────────
 
 def _build_labeled_sql(config: dict) -> str:
+    from datetime import date as _date
     res_ts = config["resolution"].replace("T", " ")
     qf = config["question_filter"]
     s, e = config["start"], config["end"]
+    # Derive block_month bounds for partition pruning
+    s_month = _date.fromisoformat(s[:10]).replace(day=1).isoformat()
+    e_month = _date.fromisoformat(e[:10]).replace(day=1).isoformat()
     return f"""
 WITH trades AS (
     SELECT block_time, maker, price, amount, token_outcome_name
     FROM polymarket_polygon.market_trades
-    WHERE {qf}
+    WHERE ({qf})
     AND block_time BETWEEN TIMESTAMP '{s}' AND TIMESTAMP '{e}'
+    AND block_month BETWEEN DATE '{s_month}' AND DATE '{e_month}'
 ),
 market_stats AS (
     SELECT COUNT(*) AS trade_count,
@@ -158,9 +163,9 @@ def fetch_labeled_market_trades() -> dict:
         if not df.empty:
             row = df.iloc[0]
             print(
-                f"  trades={int(row.get('trade_count', 0)):,} "
-                f"wallets={int(row.get('unique_wallets', 0)):,} "
-                f"vol=${float(row.get('total_volume', 0)):,.0f}"
+                f"  trades={int(row.get('trade_count') or 0):,} "
+                f"wallets={int(row.get('unique_wallets') or 0):,} "
+                f"vol=${float(row.get('total_volume') or 0):,.0f}"
             )
         else:
             print("  No results")
@@ -237,7 +242,9 @@ def fetch_top_n_wallet_data(
     from datetime import datetime, timezone as _tz
     now_ts = datetime.now(_tz.utc).strftime("%Y-%m-%d %H:%M:%S")
 
+    from datetime import date as _date
     values_rows = []
+    effective_ts_list = []
     for q in top_markets["question"].tolist():
         end_date = end_dates.get(q, "")
         if not end_date:
@@ -248,12 +255,19 @@ def fetch_top_n_wallet_data(
         if ts > now_ts:
             ts = now_ts
         values_rows.append(f"    ({sql_quote(q)}, TIMESTAMP '{ts}')")
+        effective_ts_list.append(ts)
 
     if not values_rows:
         print("No markets with end_date — skipping wallet query")
         return pd.DataFrame()
 
     values_clause = ",\n".join(values_rows)
+
+    # Derive block_month lower bound from the earliest effective end_date for
+    # partition pruning (markets start well before their end_date, but this
+    # still eliminates pre-2024 data and dramatically reduces scan cost).
+    min_ts = min(effective_ts_list)
+    min_month = _date.fromisoformat(min_ts[:10]).replace(day=1).isoformat()
 
     sql = f"""
 WITH market_times AS (
@@ -268,6 +282,7 @@ trades AS (
     FROM polymarket_polygon.market_trades t
     JOIN market_times mt ON t.question = mt.question
     WHERE t.block_time <= mt.end_date
+    AND t.block_month >= DATE '{min_month}'
 ),
 wallet_first_seen AS (
     SELECT question, maker, amount, end_date,
