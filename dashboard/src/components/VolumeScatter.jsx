@@ -64,7 +64,7 @@ export default function VolumeScatter({ data }) {
   )
 
   const logDomain = [
-    Math.floor(Math.log10(Math.min(...plotData.map((d) => d.volume)) * 0.5)),
+    6, // fixed at $1M minimum
     Math.ceil(Math.log10(Math.max(...plotData.map((d) => d.volume)) * 2)),
   ]
 
