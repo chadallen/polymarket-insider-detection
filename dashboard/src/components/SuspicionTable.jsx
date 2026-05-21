@@ -290,6 +290,21 @@ export default function SuspicionTable({ data, scored = {}, wallet = {}, onRowCl
               {/* ── Expanded detail panel ── */}
               {isOpen && (
                 <div className="px-4 pb-5 pt-3 bg-white border-t border-zinc-100">
+                  <div className="mb-3">
+                    <a
+                      href={row.market_url || `https://polymarket.com/markets?_q=${encodeURIComponent(row.question)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-mono text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                      View on Polymarket
+                    </a>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 mb-5">
                     <ScoreBreakdown row={row} />
                     <SignalRadar row={row} />

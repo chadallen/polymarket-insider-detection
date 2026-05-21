@@ -82,7 +82,7 @@ def merge_features(df_scored: pd.DataFrame, df_wallet_agg: pd.DataFrame | None) 
     upstream to select markets for Dune wallet queries.
     """
     price_cols = [
-        "question", "volume", "end_date", "suspicion_score",
+        "question", "volume", "end_date", "market_url", "suspicion_score",
         "surprise_score", "late_move_ratio", "price_volatility",
         "max_single_move", "total_price_move",
         "price_momentum_6h", "price_momentum_12h",

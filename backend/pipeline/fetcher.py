@@ -25,10 +25,11 @@ TAG_NAMES = {
 }
 
 
-def _parse_markets_from_events(events: list, seen_ids: set) -> list:
+def _parse_markets_from_events(events: list, seen_ids: set, tag_id: int = 0) -> list:
     """Extract market rows from Gamma API event objects."""
     rows = []
     for event in events:
+        event["_tag_id"] = tag_id
         for mkt in event.get("markets", []):
             mid = mkt.get("conditionId")
             if not mid or mid in seen_ids:
@@ -46,8 +47,9 @@ def _parse_markets_from_events(events: list, seen_ids: set) -> list:
                 "volume":          float(mkt.get("volume") or 0),
                 "resolution_time": mkt.get("endDate"),
                 "token_id":        token_id,
-                "category":        "politics",
+                "category":        TAG_NAMES.get(event.get("_tag_id"), "unknown"),
                 "event_title":     event.get("title", ""),
+                "market_url":      f"https://polymarket.com/event/{event.get('slug', '')}" if event.get("slug") else "",
             })
     return rows
 
@@ -82,7 +84,7 @@ def fetch_markets() -> pd.DataFrame:
                 break
 
             count_before = len(all_markets)
-            all_markets.extend(_parse_markets_from_events(events, seen_ids))
+            all_markets.extend(_parse_markets_from_events(events, seen_ids, tag_id))
             new_count = len(all_markets) - count_before
 
             print(f"    Page {page + 1}: +{new_count} new | Running total: {len(all_markets)}")
@@ -139,7 +141,7 @@ def fetch_live_markets(hours_ahead: int = 48, min_volume: float = 1_000_000) -> 
                 break
 
             new_count_before = len(all_markets)
-            all_markets.extend(_parse_markets_from_events(events, seen_ids))
+            all_markets.extend(_parse_markets_from_events(events, seen_ids, tag_id))
             new_count = len(all_markets) - new_count_before
             print(f"    Page {page + 1}: +{new_count} | Running total: {len(all_markets)}")
             time.sleep(0.3)
