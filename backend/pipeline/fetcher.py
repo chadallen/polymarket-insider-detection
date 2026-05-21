@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from backend.config import (
     FETCH_TAG_IDS, MARKETS_PER_PAGE, MAX_PAGES,
     MIN_VOLUME_USD, MIN_END_DATE, PRICE_HOURS_BEFORE,
+    question_is_blocked,
 )
 
 TAG_NAMES = {
@@ -32,7 +33,8 @@ def _parse_markets_from_events(events: list, seen_ids: set, tag_id: int = 0) -> 
         event["_tag_id"] = tag_id
         for mkt in event.get("markets", []):
             mid = mkt.get("conditionId")
-            if not mid or mid in seen_ids:
+            question = mkt.get("question", "")
+            if not mid or mid in seen_ids or question_is_blocked(question):
                 continue
             seen_ids.add(mid)
             try:

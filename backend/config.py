@@ -35,6 +35,23 @@ MARKETS_PER_PAGE   = 100
 MAX_PAGES          = 10
 PRICE_HOURS_BEFORE = 48  # Hours of price history to fetch before resolution
 
+# ── Question content filter ────────────────────────────────────────────────
+# Markets whose question matches any of these patterns (case-insensitive) are
+# excluded from the pipeline. Add patterns here to suppress noisy market types.
+import re as _re
+QUESTION_BLOCK_PATTERNS = [
+    # Elon Musk tweet/post-count markets ("Will Elon Musk post 120-139 tweets...")
+    _re.compile(r"elon musk", _re.IGNORECASE),
+    # Andrew Tate post-count markets ("Andrew Tate total posts March 10 - March 17?")
+    _re.compile(r"andrew tate", _re.IGNORECASE),
+    # Generic election winner markets ("will X win the Y election", "election winner YYYY")
+    _re.compile(r"win\b.{0,40}\belection\b", _re.IGNORECASE),
+    _re.compile(r"\belection\b.{0,40}\bwinner\b", _re.IGNORECASE),
+]
+
+def question_is_blocked(question: str) -> bool:
+    return any(p.search(question) for p in QUESTION_BLOCK_PATTERNS)
+
 # ── Local data directory (replaces Google Drive) ──────────────────────────
 DATA_DIR = os.environ.get(
     "DATA_DIR",
